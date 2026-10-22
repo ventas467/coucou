@@ -72,6 +72,13 @@ const ACCENT = {
 
 export const PILL_CATALOG: readonly PillDefinition[] = [
   // ── Where you code ─────────────────────────────────────────────────────────
+  // OpenClaw is a Windows addition: its relay plugin tags every event with
+  // `coucou_agent: "openclaw"`, so the dynamic pill it would normally get is
+  // declared here to make it a first-class workspace tool (and main pill).
+  // Nothing to set up from Coucou's side (the plugin and bridge are already
+  // installed), so its idle card says it is ready instead of "hooks missing".
+  { id: "agent_openclaw", name: "OpenClaw", color: "#F97316", category: "workspace",
+    subtitle: N_("Integration"), source: "agent", support: "yes", connect: none },
   { id: "integration_claude", name: "Claude Code", color: "#F5F6F8", category: "workspace",
     subtitle: N_("Integration"), source: "claudeCode", support: "yes", connect: hooks },
   // Claude Code in Cursor's terminal: the same hooks as Claude Code.
@@ -180,6 +187,7 @@ export function mainPillChoices(os: HostOs = HOST_OS): PillDefinition[] {
 /** PillDefinition.sessionSubtitle — next to the name in a live session's card. */
 export function sessionSubtitle(id: string): string {
   switch (id) {
+    case "agent_openclaw": return "OpenClaw";
     case "integration_claude": return "Claude Code";
     case "agent_cursor": return "Cursor";
     case "agent_codex": return "Codex";

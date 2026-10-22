@@ -19,7 +19,10 @@ test("the catalog holds the Mac's pills with the Claude Code label for Windows a
   // Copied from NotchBuddy/Sources/CoucouKit/PillCatalog.swift: an ID is a
   // contract value, and a colour or subtitle that drifts is a visible bug.
   // Windows and Linux name the Claude Code integration after the agent.
+  // OpenClaw is the Windows-local addition that makes its relay pill a
+  // workspace tool, so it can be the main pill.
   const mac = [
+    ["agent_openclaw", "OpenClaw", "#F97316", "workspace", "Integration"],
     ["integration_claude", "Claude Code", "#F5F6F8", "workspace", "Integration"],
     ["agent_cursor", "Cursor", "#C0C4CC", "workspace", "Integration"],
     ["agent_antigravity", "Antigravity", "#E879F9", "workspace", "Integration"],
@@ -149,7 +152,7 @@ test("no chat provider that works here says Coming soon", () => {
 
 test("the main pill is a workspace tool that works here", () => {
   assert.deepEqual(mainPillChoices("linux").map((p) => p.id), [
-    "integration_claude", "agent_cursor", "agent_antigravity", "agent_codex",
+    "agent_openclaw", "integration_claude", "agent_cursor", "agent_antigravity", "agent_codex",
   ]);
   assert.equal(DEFAULT_MAIN_PILL, "integration_claude");
 });
@@ -158,12 +161,15 @@ test("hook-driven pills are the workspace tools and the agents with hooks", () =
   for (const id of ["integration_claude", "agent_cursor", "agent_codex", "agent_gemini", "agent_copilot", "agent_muse", "agent_antigravity", "agent_opencode", "agent_amp", "agent_hermes"]) {
     assert.ok(isHookPill(id), id);
   }
+  // OpenClaw's relay lives in its own plugin, not in Coucou's hook setup.
+  assert.ok(!isHookPill("agent_openclaw"));
   for (const id of ["agent_claude-desktop", "ai_anthropic", "integration_stripe", "agent_unknown"]) {
     assert.ok(!isHookPill(id), id);
   }
 });
 
 test("a live session names its tool next to the project", () => {
+  assert.equal(sessionSubtitle("agent_openclaw"), "OpenClaw");
   assert.equal(sessionSubtitle("integration_claude"), "Claude Code");
   assert.equal(sessionSubtitle("agent_cursor"), "Cursor");
   assert.equal(sessionSubtitle("agent_claude-desktop"), "Claude Desktop");
@@ -249,6 +255,16 @@ test("the main pill always loads, the declared ones join it, and focus starts on
   assert.equal(State.focusId, "agent_cursor");
   assert.equal(State.tasks[1].name, "Gemini CLI");
   assert.equal(State.tasks[1].color, "#8AB4F8");
+});
+
+test("OpenClaw can be the main pill: it loads immediately, first, and focused", () => {
+  State.settings.mainPill = "agent_openclaw";
+  State.loadIntegrationTasks();
+  assert.equal(ids()[0], "agent_openclaw");
+  assert.equal(State.focusId, "agent_openclaw");
+  assert.equal(State.tasks[0].name, "OpenClaw");
+  assert.equal(State.tasks[0].color, "#F97316");
+  assert.equal(State.tasks[0].state, "idle");
 });
 
 test("an old settings file gets Claude Code as its main pill and keeps its integrations", () => {
